@@ -1,0 +1,23 @@
+server:
+  port: 8080
+spring:
+  datasource:
+    #    type: com.alibaba.druid.pool.DruidDataSource
+    type: com.zaxxer.hikari.HikariDataSource
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://127.0.0.1:3306/crawler?characterEncoding=UTF-8&serverTimezone=Asia/Shanghai
+    username: root
+    password: root
+
+mybatis-plus:
+  mapper-locations: classpath*:/mapper/*.xml
+  configuration:
+    cache-enabled: false
+  global-config:
+    banner: false
+    enable-sql-runner: true
+    db-config:
+      id-type: AUTO
+logging:
+  pattern:
+    dateformat: yyyy-MM-dd HH:mm:ss.SSS
