@@ -1,11 +1,12 @@
 package com.noodles.crawler.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.SchemaProperty;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
@@ -20,28 +21,29 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @TableName("sys_request_info")
-@ApiModel(value = "RequestInfo对象", description = "")
+@Schema(name = "RequestInfo对象", description = "")
 public class RequestInfo implements Serializable {
 
+    @Serial
     private static final long serialVersionUID = 1L;
 
-    @ApiModelProperty("主键")
+    @SchemaProperty(name = "主键")
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
 
-    @ApiModelProperty("请求最大连接时间")
+    @SchemaProperty(name = "请求最大连接时间")
     private Integer connectTimeOut;
 
-    @ApiModelProperty("请求最大读取时间")
+    @SchemaProperty(name = "请求最大读取时间")
     private Integer readTimeOut;
 
-    @ApiModelProperty("cookie")
+    @SchemaProperty(name = "cookie")
     private String cookie;
 
-    @ApiModelProperty("请求参数")
+    @SchemaProperty(name = "请求参数")
     private String params;
 
-    @ApiModelProperty("请求头")
+    @SchemaProperty(name = "请求头")
     private String headers;
 
     @TableField(fill = FieldFill.INSERT)
@@ -49,6 +51,5 @@ public class RequestInfo implements Serializable {
 
     @TableField(fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updateTime;
-
 
 }

@@ -18,6 +18,12 @@ mybatis-plus:
     enable-sql-runner: true
     db-config:
       id-type: AUTO
+
 logging:
   pattern:
     dateformat: yyyy-MM-dd HH:mm:ss.SSS
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
