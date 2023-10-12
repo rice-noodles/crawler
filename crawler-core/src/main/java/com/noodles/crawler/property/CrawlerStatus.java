@@ -1,4 +1,4 @@
-package com.noodles.crawler.crawler.property;
+package com.noodles.crawler.property;
 
 /**
  * @author Noodles

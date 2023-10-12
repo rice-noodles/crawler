@@ -9,8 +9,9 @@ import cn.hutool.poi.excel.ExcelUtil;
 import cn.hutool.poi.excel.ExcelWriter;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.noodles.crawler.crawler.factory.AbstractWebCrawler;
+import com.noodles.crawler.core.AbstractWebCrawler;
 import com.noodles.crawler.entity.Order;
+import com.noodles.crawler.property.CrawlerContext;
 import com.noodles.crawler.utils.MyExcelUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,8 +55,7 @@ public class OrderDetailCrawler extends AbstractWebCrawler<Order> {
 
     @Override
     protected void beforeFinish() {
-        Object data = this.crawlerContext.getData();
-        this.exportToExcel((Iterable<?>) data);
+        this.exportToExcel(getList());
     }
 
     private Queue<Order> dealList() {
@@ -116,7 +116,7 @@ public class OrderDetailCrawler extends AbstractWebCrawler<Order> {
                     order.setCity(city);
                     order.setArea(area);
                     order.setAddress(address);
-                    if (!this.addData(order)) {
+                    if (!this.offer(order)) {
                         log.error("数据添加失败");
                     }
 

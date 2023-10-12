@@ -1,44 +1,46 @@
-package com.noodles.crawler.crawler.factory;
+package com.noodles.crawler.core;
 
 import cn.hutool.core.lang.TypeReference;
 import cn.hutool.http.HttpRequest;
 import cn.hutool.http.HttpResponse;
 import cn.hutool.http.HttpStatus;
 import cn.hutool.json.JSONUtil;
-import com.noodles.crawler.crawler.property.CrawlerContext;
-import com.noodles.crawler.crawler.property.CrawlerStatus;
-import com.noodles.crawler.entity.CrawlerInfo;
-import com.noodles.crawler.entity.RequestInfo;
 import com.noodles.crawler.http.HttpHandler;
+import com.noodles.crawler.property.CrawlerContext;
+import com.noodles.crawler.property.CrawlerStatus;
+import com.noodles.crawler.property.HttpInfo;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 /**
- * @Author: noodles
- * @Date: 2021/12/04 9:39
+ * @author: noodles
+ * @date: 2021/12/04 9:39
  */
-
 @Slf4j
 public abstract class AbstractWebCrawler<T> implements WebCrawler {
 
     protected volatile CrawlerContext crawlerContext;
 
-    private volatile CrawlerInfo crawlerInfo;
+    @Setter
+    @Getter
+    private HttpHandler httpHandler;
 
     /*** 获取的数据结果 */
     private final Queue<T> dataQueue = new LinkedBlockingQueue<>();
 
     @Override
-    public final synchronized void initialize(CrawlerContext context) {
-        if (crawlerContext == null) {
-            this.crawlerContext = context;
-            this.crawlerInfo = context.getCrawlerInfo();
-            this.refreshCrawler(CrawlerStatus.READY);
-            log.info("crawler initial...");
+    public final synchronized void initialize() {
+        if (this.crawlerContext == null) {
+            throw new NullPointerException();
         }
+        this.refreshStatus(CrawlerStatus.READY);
+        log.info("crawler initial...");
     }
 
     @Override
@@ -49,61 +51,78 @@ public abstract class AbstractWebCrawler<T> implements WebCrawler {
         }
         this.beforeRun();
         if (isRunning()) {
-            log.warn("[{}] crawler is running !", crawlerInfo.getName());
+            log.warn("[{}] crawler is running !", crawlerContext.getName());
             return;
         }
-        refreshCrawler(CrawlerStatus.RUNNING);
+        refreshStatus(CrawlerStatus.RUNNING);
         if (!isRunning()) {
             throw new InterruptedException();
         }
         try {
             this.execute();
         } catch (Exception e) {
-            log.error("[{}] crawler running error !", crawlerInfo.getName(), e);
+            log.error("[{}] crawler running error !", crawlerContext.getName(), e);
         }
     }
 
     @Override
     public final synchronized void finish() {
-        if (CrawlerStatus.FINISHED.name().equals(this.crawlerInfo.getStatus())) {
+        if (CrawlerStatus.FINISHED.name().equals(this.crawlerContext.getStatus())) {
             return;
         }
         this.beforeFinish();
-        this.refreshCrawler(CrawlerStatus.FINISHED);
+        this.refreshStatus(CrawlerStatus.FINISHED);
     }
 
     @Override
     public boolean isRunning() {
-        if (this.crawlerInfo == null) {
+        if (this.crawlerContext == null) {
             return false;
         }
-        return this.crawlerInfo.getStatus().equals(CrawlerStatus.RUNNING.name());
+        return this.crawlerContext.getStatus().equals(CrawlerStatus.RUNNING.name());
     }
 
     @Override
-    public void refreshCrawler(CrawlerStatus status) {
-        this.crawlerInfo.setStatus(status.name());
+    public void refreshStatus(CrawlerStatus status) {
+        this.crawlerContext.setStatus(status.name());
         // todo refreshCrawler
     }
 
     @Override
-    public int dataSize() {
-        return this.dataQueue.size();
+    public HttpInfo getHttpInfo() {
+        return this.crawlerContext.getHttpInfo();
     }
 
     @Override
-    public RequestInfo getRequestInfo() {
-        if (this.crawlerContext == null) {
-            return null;
-        }
-        return this.crawlerContext.getRequestInfo();
+    public CrawlerContext getCrawlerContext() {
+        return this.crawlerContext;
     }
 
-    protected boolean addData(T data) {
+    @Override
+    public void setCrawlerContext(CrawlerContext crawlerContext) {
+        this.crawlerContext = crawlerContext;
+    }
+
+    protected boolean offer(T data) {
         if (isRunning()) {
             return this.dataQueue.offer(data);
         }
         return false;
+    }
+
+    protected T poll() {
+        if (!this.dataQueue.isEmpty()) {
+            return this.dataQueue.poll();
+        }
+        return null;
+    }
+
+    protected List<T> getList() {
+        return new ArrayList<>(this.dataQueue);
+    }
+
+    protected int dataSize() {
+        return this.dataQueue.size();
     }
 
     protected void beforeRun() {
@@ -113,12 +132,12 @@ public abstract class AbstractWebCrawler<T> implements WebCrawler {
     }
 
     protected HttpResponse doRequest(HttpRequest request) throws Exception {
-        RequestInfo requestInfo = crawlerContext.getRequestInfo();
-        String headers = requestInfo.getHeaders();
-        String cookie = requestInfo.getCookie();
-        int connectTimeOut = requestInfo.getConnectTimeOut();
-        int readTimeOut = requestInfo.getReadTimeOut();
-        request.addHeaders(JSONUtil.toBean(headers, new TypeReference<Map<String, String>>() {
+        HttpInfo httpInfo = crawlerContext.getHttpInfo();
+        String headers = httpInfo.getHeaders();
+        String cookie = httpInfo.getCookie();
+        int connectTimeOut = httpInfo.getConnectTimeOut();
+        int readTimeOut = httpInfo.getReadTimeOut();
+        request.addHeaders(JSONUtil.toBean(headers, new TypeReference<>() {
                 }, false))
                 .cookie(cookie)
                 .setConnectionTimeout(connectTimeOut)
@@ -128,7 +147,7 @@ public abstract class AbstractWebCrawler<T> implements WebCrawler {
                 .cookie(CRAWLER_CONTEXT.getCookie())
                 .setConnectionTimeout(5000)
                 .setReadTimeout(60000);*/
-        HttpResponse response = HttpHandler.executeAndRetry(request, 3, null);
+        HttpResponse response = this.httpHandler.executeAndRetry(request, 3);
         if (response.getStatus() != HttpStatus.HTTP_OK) {
             log.error("request fail : {} {}", response.getStatus(), response.body());
         }

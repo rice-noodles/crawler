@@ -25,6 +25,11 @@
             <artifactId>crawler-common</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
+        <dependency>
+            <groupId>com.noodles</groupId>
+            <artifactId>crawler-core</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
         <!--        <dependency>-->
         <!--            <groupId>com.alibaba</groupId>-->
         <!--            <artifactId>druid-spring-boot-3-starter</artifactId>-->

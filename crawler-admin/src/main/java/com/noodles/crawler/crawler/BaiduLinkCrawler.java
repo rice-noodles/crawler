@@ -5,9 +5,9 @@ import cn.hutool.http.HttpRequest;
 import cn.hutool.http.HttpResponse;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
-import com.noodles.crawler.crawler.factory.AbstractWebCrawler;
+import com.noodles.crawler.core.AbstractWebCrawler;
 import com.noodles.crawler.entity.BaiduLink;
-import com.noodles.crawler.entity.RequestInfo;
+import com.noodles.crawler.property.HttpInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -32,8 +32,9 @@ public class BaiduLinkCrawler extends AbstractWebCrawler<BaiduLink> {
 
     @Override
     public void execute() throws Exception {
-        RequestInfo requestInfo = this.getRequestInfo();
-        Params params = new Params(requestInfo.getParams());
+        HttpInfo httpInfo = getHttpInfo();
+
+        Params params = new Params(httpInfo.getParams());
         synchronized (this) {
             if (this.pn.get() == 0) {
                 String pnValue = params.getPnValue();
@@ -70,7 +71,7 @@ public class BaiduLinkCrawler extends AbstractWebCrawler<BaiduLink> {
             BaiduLink entity = new BaiduLink();
             entity.setUrl(href);
             entity.setTitle(title);
-            this.addData(entity);
+            this.offer(entity);
         }
     }
 

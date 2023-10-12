@@ -1,6 +1,5 @@
-package com.noodles.crawler.crawler.property;
+package com.noodles.crawler.property;
 
-import com.noodles.crawler.entity.CrawlerInfo;
 import lombok.Data;
 
 import java.util.concurrent.FutureTask;
@@ -13,7 +12,7 @@ import java.util.concurrent.FutureTask;
 @Data
 public class CrawlerTask<T> {
 
-    private CrawlerInfo crawlerInfo;
+    private CrawlerContext context;
 
     private Runnable task;
 
@@ -27,8 +26,8 @@ public class CrawlerTask<T> {
         this.threadNum = threadNum;
     }*/
 
-    public CrawlerTask(CrawlerInfo crawlerInfo, Runnable task, int threadNum) {
-        this.crawlerInfo = crawlerInfo;
+    public CrawlerTask(CrawlerContext context, Runnable task, int threadNum) {
+        this.context = context;
         this.task = new FutureTask<>(task, null);
         this.threadNum = threadNum;
     }

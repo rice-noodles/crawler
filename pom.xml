@@ -7,6 +7,7 @@
         <module>crawler-common</module>
         <module>code-generator</module>
         <module>crawler-admin</module>
+        <module>crawler-core</module>
     </modules>
     <parent>
         <groupId>org.springframework.boot</groupId>

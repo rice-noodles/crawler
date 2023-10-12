@@ -3,13 +3,19 @@ package com.noodles.crawler.entity;
 import lombok.Builder;
 import lombok.Data;
 
+import java.io.Serial;
+import java.io.Serializable;
+
 /**
  * @Author: noodles
  * @Date: 2022/03/06 11:48
  */
 @Data
 @Builder
-public class Order {
+public class Order implements Serializable {
+
+    @Serial
+    private static final long serialVersionUID = 3785948373930640645L;
 
     private String bizNo; // 唯一业务号(如id等)
 
